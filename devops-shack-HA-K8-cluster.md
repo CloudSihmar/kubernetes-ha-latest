@@ -50,7 +50,7 @@ To set up a highly available Kubernetes cluster with two master nodes and three 
    ```
 5. **Configure Keepalived:**
 
-   Primary Server
+   **Primary Server**
    vi /etc/keepalived/keepalived.conf
 
    ```bash
@@ -69,11 +69,10 @@ To set up a highly available Kubernetes cluster with two master nodes and three 
     virtual_ipaddress {
         192.168.10.10  
     }
-}
-
+    }
    ```
 
-Backend Server
+**Backend Server**
    vi /etc/keepalived/keepalived.conf
 
    ```bash
