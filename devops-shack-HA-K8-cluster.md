@@ -35,12 +35,73 @@ To set up a highly available Kubernetes cluster with two master nodes and three 
        option tcp-check
        server master1 <MASTER1_IP>:6443 check
        server master2 <MASTER2_IP>:6443 check
+       server master3 <MASTER2_IP>:6443 check
    ```
 
 3. **Restart HAProxy:**
    ```bash
    sudo systemctl restart haproxy
    ```
+
+4. **Install Keepalived(Optional: to provide high availability to HAProxy):**
+   ```bash
+   sudo apt update
+   sudo apt install keepalived -y
+   ```
+5. **Configure Keepalived:**
+
+   Primary Server
+   vi /etc/keepalived/keepalived.conf
+
+   ```bash
+   vrrp_instance VI_1 {
+    state MASTER
+    interface eth0  # network interface
+    virtual_router_id 51
+    priority 100  # Higher priority for MASTER
+    advert_int 1
+
+    authentication {
+        auth_type PASS
+        auth_pass 12345  
+    }
+
+    virtual_ipaddress {
+        192.168.10.10  
+    }
+}
+
+   ```
+
+Backend Server
+   vi /etc/keepalived/keepalived.conf
+
+   ```bash
+   vrrp_instance VI_1 {
+    state MASTER
+    interface eth0  # network interface
+    virtual_router_id 51
+    priority 90  
+    advert_int 1
+
+    authentication {
+        auth_type PASS
+        auth_pass 12345  
+    }
+
+    virtual_ipaddress {
+        192.168.10.10  
+    }
+}
+
+   ```
+
+Restart Keepalived and verify VIP Configuration (on both servers)
+
+```bash
+sudo systemctl restart keepalived
+sudo ip address
+```
 
 ### Step 2: Prepare All Nodes (Masters and Workers)
 1. **Install Docker, kubeadm, kubelet, and kubectl:**
