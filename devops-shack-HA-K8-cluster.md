@@ -102,6 +102,13 @@ sudo systemctl restart keepalived
 sudo ip address
 ```
 
+Stop Keepalive on master and then see if VIP has been assigned to the backup node
+```bash
+sudo systemctl stop keepalived
+sudo ip address
+```
+
+
 ### Step 2: Prepare All Nodes (Masters and Workers)
 1. **Install Docker, kubeadm, kubelet, and kubectl:**
    ```bash
