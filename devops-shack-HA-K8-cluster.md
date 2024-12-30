@@ -5,7 +5,8 @@ To set up a highly available Kubernetes cluster with two master nodes and three 
 ### Prerequisites
 - 3 master nodes
 - 3 worker nodes
-- 1 load balancer node
+- 1 load balancer node (Master HAProxy)
+- 1 load balancer node (Backup HAProxy) Optional
 - All nodes should be running a Linux distribution like Ubuntu 
 
 ### Step 1: Prepare the Load Balancer Node
