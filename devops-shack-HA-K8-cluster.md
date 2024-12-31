@@ -112,7 +112,7 @@ sudo ip address
 
 ### Step 2: Prepare All Nodes (Masters and Workers)
 
-**Prerequsites:**
+**Prerequisites:**
 - Required ports should be opened as mentioned in this linke (https://kubernetes.io/docs/reference/networking/ports-and-protocols/)
 - Unique hostname for each machine
 - disable swap, sudo swapoff -a (temporarily), To make this change persistent across reboots, make sure swap is disabled in config files like /etc/fstab, systemd.swap, depending how it was configured on your system.
