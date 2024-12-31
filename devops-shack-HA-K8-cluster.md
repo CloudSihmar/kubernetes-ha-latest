@@ -186,12 +186,12 @@ sudo systemctl status cri-docker
    kubeadm token create --print-join-command --certificate-key $(kubeadm init phase upload-certs --upload-certs | tail -1)
    ```
 
-2. **Run the join command on the second master node:**
+2. **Run the join command as a root user on the second & third master node:**
    ```bash
    sudo kubeadm join LOAD_BALANCER_IP:6443 --token <token> --discovery-token-ca-cert-hash sha256:<hash> --control-plane --certificate-key <certificate-key> --cri-socket unix:///var/run/cri-dockerd.sock
    ```
 
-3. **Set up kubeconfig for the second master node:**
+3. **Set up kubeconfig for the second & third master node as a non-root user:**
    ```bash
    mkdir -p $HOME/.kube
    sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
@@ -204,7 +204,7 @@ sudo systemctl status cri-docker
    kubeadm token create --print-join-command
    ```
 
-2. **Run the join command on each worker node:**
+2. **Run the join command as a root user on each worker node:**
    ```bash
    sudo kubeadm join LOAD_BALANCER_IP:6443 --token <token> --discovery-token-ca-cert-hash sha256:<hash> --cri-socket unix:///var/run/cri-dockerd.sock
    ```
