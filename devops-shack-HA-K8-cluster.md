@@ -243,7 +243,15 @@ By following these steps, you will have a highly available Kubernetes cluster wi
    ```bash
    ETCDCTL_API=3 etcdctl --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key member list
    ```
-
+3. **Check the leader master node:**
+   ```bash
+   sudo ETCDCTL_API=3 etcdctl \
+    --endpoints=127.0.0.1:2379 \
+    --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+    --cert=/etc/kubernetes/pki/etcd/server.crt \
+    --key=/etc/kubernetes/pki/etcd/server.key \
+    endpoint status --write-out=table
+   ```
 ### Step 3: Verify HAProxy Configuration and Functionality
 1. **Configure HAProxy Stats:**
    - Add the stats configuration to `/etc/haproxy/haproxy.cfg`:
