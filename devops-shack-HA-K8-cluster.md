@@ -119,7 +119,7 @@ sudo ip address
 
 
 1. **Install Docker, kubeadm, kubelet, and kubectl:**
-   ```bash
+```bash
 sudo apt-get update
 sudo apt install docker.io -y
 sudo chmod 666 /var/run/docker.sock
@@ -152,7 +152,7 @@ sudo systemctl enable --now cri-docker.socket
 sudo systemctl enable cri-docker
 sudo systemctl start cri-docker
 sudo systemctl status cri-docker
-   ```
+```
 
 ### Step 3: Initialize the First Master Node
 1. **Initialize the first master node:**
