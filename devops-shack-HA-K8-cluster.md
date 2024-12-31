@@ -111,23 +111,56 @@ sudo ip address
 
 
 ### Step 2: Prepare All Nodes (Masters and Workers)
+
+**Prerequsites:**
+- Required ports should be opened as mentioned in this linke (https://kubernetes.io/docs/reference/networking/ports-and-protocols/)
+- disable swap, sudo swapoff -a (temporarily), To make this change persistent across reboots, make sure swap is disabled in config files like /etc/fstab, systemd.swap, depending how it was configured on your system.
+- All the nodes should be reachable to each other
+
+
 1. **Install Docker, kubeadm, kubelet, and kubectl:**
    ```bash
-   sudo apt-get update
-   sudo apt install docker.io -y
-   sudo chmod 666 /var/run/docker.sock
-   sudo apt-get install -y apt-transport-https ca-certificates curl gnupg
-   sudo mkdir -p -m 755 /etc/apt/keyrings
-   curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-   echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
-   sudo apt update
-   sudo apt install -y kubeadm=1.30.0-1.1 kubelet=1.30.0-1.1 kubectl=1.30.0-1.1
+sudo apt-get update
+sudo apt install docker.io -y
+sudo chmod 666 /var/run/docker.sock
+sudo apt-get install -y apt-transport-https ca-certificates curl gnupg
+sudo mkdir -p -m 755 /etc/apt/keyrings
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.32/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.32/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo chmod 644 /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+sudo apt update
+sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl
+
+# Enable net.bridge.bridge-nf-call-iptables
+sudo sysctl net.bridge.bridge-nf-call-iptables=1
+
+# Download and install cri-dockerd
+wget https://github.com/Mirantis/cri-dockerd/releases/download/v0.3.14/cri-dockerd-0.3.14.amd64.tgz
+tar -xvf cri-dockerd-0.3.14.amd64.tgz
+cd cri-dockerd
+sudo install -o root -g root -m 0755 cri-dockerd /usr/local/bin/cri-dockerd
+
+# Download and set up cri-dockerd systemd service
+cd ..
+wget https://github.com/Mirantis/cri-dockerd/archive/refs/tags/v0.3.14.tar.gz
+tar -xvf v0.3.14.tar.gz
+cd cri-dockerd-0.3.14/
+sudo cp packaging/systemd/* /etc/systemd/system
+sudo sed -i -e 's,/usr/bin/cri-dockerd,/usr/local/bin/cri-dockerd,' /etc/systemd/system/cri-docker.service
+
+# Enable and start cri-docker service
+sudo systemctl daemon-reload
+sudo systemctl enable --now cri-docker.socket
+sudo systemctl enable cri-docker
+sudo systemctl start cri-docker
+sudo systemctl status cri-docker
    ```
 
 ### Step 3: Initialize the First Master Node
 1. **Initialize the first master node:**
    ```bash
-   sudo kubeadm init --control-plane-endpoint "LOAD_BALANCER_IP:6443" --upload-certs --pod-network-cidr=10.244.0.0/16
+   sudo kubeadm init --control-plane-endpoint "LOAD_BALANCER_IP:6443" --upload-certs --pod-network-cidr=10.244.0.0/16 --cri-socket unix:///var/run/cri-dockerd.sock
    ```
 
 2. **Set up kubeconfig for the first master node:**
@@ -155,7 +188,7 @@ sudo ip address
 
 2. **Run the join command on the second master node:**
    ```bash
-   sudo kubeadm join LOAD_BALANCER_IP:6443 --token <token> --discovery-token-ca-cert-hash sha256:<hash> --control-plane --certificate-key <certificate-key>
+   sudo kubeadm join LOAD_BALANCER_IP:6443 --token <token> --discovery-token-ca-cert-hash sha256:<hash> --control-plane --certificate-key <certificate-key> --cri-socket unix:///var/run/cri-dockerd.sock
    ```
 
 3. **Set up kubeconfig for the second master node:**
@@ -173,7 +206,7 @@ sudo ip address
 
 2. **Run the join command on each worker node:**
    ```bash
-   sudo kubeadm join LOAD_BALANCER_IP:6443 --token <token> --discovery-token-ca-cert-hash sha256:<hash>
+   sudo kubeadm join LOAD_BALANCER_IP:6443 --token <token> --discovery-token-ca-cert-hash sha256:<hash> --cri-socket unix:///var/run/cri-dockerd.sock
    ```
 
 ### Step 6: Verify the Cluster
