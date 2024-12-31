@@ -132,16 +132,14 @@ sudo apt update
 sudo apt-get install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
 
-# Enable net.bridge.bridge-nf-call-iptables
+
 sudo sysctl net.bridge.bridge-nf-call-iptables=1
 
-# Download and install cri-dockerd
 wget https://github.com/Mirantis/cri-dockerd/releases/download/v0.3.14/cri-dockerd-0.3.14.amd64.tgz
 tar -xvf cri-dockerd-0.3.14.amd64.tgz
 cd cri-dockerd
 sudo install -o root -g root -m 0755 cri-dockerd /usr/local/bin/cri-dockerd
 
-# Download and set up cri-dockerd systemd service
 cd ..
 wget https://github.com/Mirantis/cri-dockerd/archive/refs/tags/v0.3.14.tar.gz
 tar -xvf v0.3.14.tar.gz
@@ -149,7 +147,6 @@ cd cri-dockerd-0.3.14/
 sudo cp packaging/systemd/* /etc/systemd/system
 sudo sed -i -e 's,/usr/bin/cri-dockerd,/usr/local/bin/cri-dockerd,' /etc/systemd/system/cri-docker.service
 
-# Enable and start cri-docker service
 sudo systemctl daemon-reload
 sudo systemctl enable --now cri-docker.socket
 sudo systemctl enable cri-docker
